@@ -1,4 +1,5 @@
 import {api} from "./api.js";
+import "./i18n.js"
 
 export function $el(tag, propsOrChildren, children) {
 	const split = tag.split(".");
@@ -575,7 +576,7 @@ export class ComfyUI {
 			]),
 			$el("button.comfy-queue-btn", {
 				id: "queue-button",
-				textContent: "Queue Prompt",
+				textContent: i18next.t("ui.queue_btn"),
 				onclick: () => app.queuePrompt(0, this.batchCount),
 			}),
 			$el("div", {}, [
@@ -651,7 +652,7 @@ export class ComfyUI {
 			this.history.element,
 			$el("button", {
 				id: "comfy-save-button",
-				textContent: "Save",
+				textContent: i18next.t("ui.save_btn"),
 				onclick: () => {
 					let filename = "workflow.json";
 					if (promptFilename.value) {
@@ -708,15 +709,15 @@ export class ComfyUI {
 					});
 				},
 			}),
-			$el("button", {id: "comfy-load-button", textContent: "Load", onclick: () => fileInput.click()}),
+			$el("button", {id: "comfy-load-button", textContent: i18next.t("ui.load_btn"), onclick: () => fileInput.click()}),
 			$el("button", {
 				id: "comfy-refresh-button",
-				textContent: "Refresh",
+				textContent: i18next.t("ui.refresh_btn"),
 				onclick: () => app.refreshComboInNodes()
 			}),
-			$el("button", {id: "comfy-clipspace-button", textContent: "Clipspace", onclick: () => app.openClipspace()}),
+			$el("button", {id: "comfy-clipspace-button", textContent: i18next.t("ui.clipspace_btn"), onclick: () => app.openClipspace()}),
 			$el("button", {
-				id: "comfy-clear-button", textContent: "Clear", onclick: () => {
+				id: "comfy-clear-button", textContent: i18next.t("ui.clear_btn"), onclick: () => {
 					if (!confirmClear.value || confirm("Clear workflow?")) {
 						app.clean();
 						app.graph.clear();
@@ -724,7 +725,7 @@ export class ComfyUI {
 				}
 			}),
 			$el("button", {
-				id: "comfy-load-default-button", textContent: "Load Default", onclick: () => {
+				id: "comfy-load-default-button", textContent: i18next.t("ui.load_default_btn"), onclick: () => {
 					if (!confirmClear.value || confirm("Load default workflow?")) {
 						app.loadGraphData()
 					}
