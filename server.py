@@ -1,15 +1,18 @@
-import os
-import sys
 import asyncio
-import nodes
-import folder_paths
-import execution
-import uuid
-import json
 import glob
+import json
+import os
 import struct
-from PIL import Image, ImageOps
+import sys
+import uuid
 from io import BytesIO
+
+from PIL import Image, ImageOps
+
+import execution
+import folder_paths
+import nodes
+from i18n import get_locale,get_locale_node_display_name_mapping
 
 try:
     import aiohttp
@@ -22,9 +25,10 @@ except ImportError:
     sys.exit()
 
 import mimetypes
-from comfy.cli_args import args
-import comfy.utils
+
 import comfy.model_management
+import comfy.utils
+from comfy.cli_args import args
 
 
 class BinaryEventTypes:
@@ -104,7 +108,7 @@ class PromptServer():
                 # On reconnect if we are the currently executing client send the current node
                 if self.client_id == sid and self.last_node_id is not None:
                     await self.send("executing", { "node": self.last_node_id }, sid)
-                    
+
                 async for msg in ws:
                     if msg.type == aiohttp.WSMsgType.ERROR:
                         print('ws connection closed with exception %s' % ws.exception())
@@ -363,7 +367,7 @@ class PromptServer():
         async def get_prompt(request):
             return web.json_response(self.get_queue_info())
 
-        def node_info(node_class):
+        def node_info(node_class, display_name: str = None):
             obj_class = nodes.NODE_CLASS_MAPPINGS[node_class]
             info = {}
             info['input'] = obj_class.INPUT_TYPES()
@@ -371,7 +375,10 @@ class PromptServer():
             info['output_is_list'] = obj_class.OUTPUT_IS_LIST if hasattr(obj_class, 'OUTPUT_IS_LIST') else [False] * len(obj_class.RETURN_TYPES)
             info['output_name'] = obj_class.RETURN_NAMES if hasattr(obj_class, 'RETURN_NAMES') else info['output']
             info['name'] = node_class
-            info['display_name'] = nodes.NODE_DISPLAY_NAME_MAPPINGS[node_class] if node_class in nodes.NODE_DISPLAY_NAME_MAPPINGS.keys() else node_class
+            if display_name is not None:
+                info['display_name'] = display_name
+            else:
+                info['display_name'] = nodes.NODE_DISPLAY_NAME_MAPPINGS[node_class] if node_class in nodes.NODE_DISPLAY_NAME_MAPPINGS.keys() else node_class
             info['description'] = ''
             info['category'] = 'sd'
             if hasattr(obj_class, 'OUTPUT_NODE') and obj_class.OUTPUT_NODE == True:
@@ -386,8 +393,10 @@ class PromptServer():
         @routes.get("/object_info")
         async def get_object_info(request):
             out = {}
+            locale = get_locale(request)
+            display_map = get_locale_node_display_name_mapping(locale)
             for x in nodes.NODE_CLASS_MAPPINGS:
-                out[x] = node_info(x)
+                out[x] = node_info(x, display_map.get(x, x))
             return web.json_response(out)
 
         @routes.get("/object_info/{node_class}")
@@ -395,7 +404,9 @@ class PromptServer():
             node_class = request.match_info.get("node_class", None)
             out = {}
             if (node_class is not None) and (node_class in nodes.NODE_CLASS_MAPPINGS):
-                out[node_class] = node_info(node_class)
+                locale = get_locale(request)
+                display_map = get_locale_node_display_name_mapping(locale)
+                out[node_class] = node_info(node_class, display_map.get(node_class,node_class))
             return web.json_response(out)
 
         @routes.get("/history")
@@ -484,7 +495,7 @@ class PromptServer():
                     self.prompt_queue.delete_history_item(id_to_delete)
 
             return web.Response(status=200)
-        
+
     def add_routes(self):
         self.app.add_routes(self.routes)
         self.app.add_routes([
