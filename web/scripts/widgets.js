@@ -9,7 +9,7 @@ function getNumberDefaults(inputData, defaultStep) {
 	if (max == undefined) max = 2048;
 	if (step == undefined) step = defaultStep;
 
-	return { val: defaultVal, config: { min, max, step: 10.0 * step } };
+	return { val: defaultVal, config: { min, max, step: 10.0 * step, label: inputData[1]["label"] } };
 }
 
 export function addValueControlWidget(node, targetWidget, defaultValue = "randomize", values) {
@@ -180,6 +180,7 @@ function addMultilineWidget(node, name, opts, app) {
 			});
 			this.inputEl.hidden = !visible;
 		},
+		label: opts.label,
 	};
 	widget.inputEl = document.createElement("textarea");
 	widget.inputEl.className = "comfy-multiline-input";
@@ -247,7 +248,7 @@ function addMultilineWidget(node, name, opts, app) {
 		};
 	}
 
-	return { minWidth: 400, minHeight: 200, widget };
+	return { minWidth: 400, minHeight: 200, widget, label: opts.label };
 }
 
 function isSlider(display, app) {
@@ -292,7 +293,7 @@ export const ComfyWidgets = {
 				inputName,
 				defaultVal,
 				() => {},
-				{"on": inputData[1].label_on, "off": inputData[1].label_off}
+				{"on": inputData[1].label_on, "off": inputData[1].label_off,label: inputData?.[1].label}
 				)
 		};
 	},
@@ -303,7 +304,9 @@ export const ComfyWidgets = {
 		if (multiline) {
 			return addMultilineWidget(node, inputName, { defaultVal, ...inputData[1] }, app);
 		} else {
-			return { widget: node.addWidget("text", inputName, defaultVal, () => {}, {}) };
+			return { widget: node.addWidget("text", inputName, defaultVal, () => {}, {
+				label: inputData?.[1]['label'],
+			}) };
 		}
 	},
 	COMBO(node, inputName, inputData) {
@@ -312,7 +315,8 @@ export const ComfyWidgets = {
 		if (inputData[1] && inputData[1].default) {
 			defaultValue = inputData[1].default;
 		}
-		return { widget: node.addWidget("combo", inputName, defaultValue, () => {}, { values: type }) };
+		const label=inputData?.[1]?.['label']
+		return { widget: node.addWidget("combo", inputName, defaultValue, () => {}, { values: type, label }) };
 	},
 	IMAGEUPLOAD(node, inputName, inputData, app) {
 		const imageWidget = node.widgets.find((w) => w.name === "image");
@@ -428,7 +432,7 @@ export const ComfyWidgets = {
 		// Create the button widget for selecting the files
 		uploadWidget = node.addWidget("button", "choose file to upload", "image", () => {
 			fileInput.click();
-		});
+		}, {label: inputData?.[1]?.['label']});
 		uploadWidget.serialize = false;
 
 		// Add handler to check if an image is being dragged over our node

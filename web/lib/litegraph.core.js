@@ -3767,6 +3767,11 @@
             w.y = w.options.y;
         }
 
+        // Add label property for custom display name
+        if (typeof w.options.label === "string") {
+            w.label = w.options.label
+        }
+
         if (!callback && !w.options.callback && !w.options.property) {
             console.warn("LiteGraph addWidget(...) without a callback or property assigned");
         }
@@ -12518,37 +12523,37 @@ LGraphNode.prototype.executeAction = function(action)
 			panel.content.innerHTML = ""; //clear
 			panel.addHTML("<span class='node_type'>"+node.type+"</span><span class='node_desc'>"+(node.constructor.desc || "")+"</span><span class='separator'></span>");
 
-			panel.addHTML("<h3>Properties</h3>");
+			panel.addHTML(`<h3>${i18next.t("ui.node_panel.header.properties")}</h3>`);
 
             var fUpdate = function(name,value){
-                            graphcanvas.graph.beforeChange(node);
-                            switch(name){
-                                case "Title":
-                                    node.title = value;
-                                    break;
-                                case "Mode":
-                                    var kV = Object.values(LiteGraph.NODE_MODES).indexOf(value);
-                                    if (kV>=0 && LiteGraph.NODE_MODES[kV]){
-                                        node.changeMode(kV);
-                                    }else{
-                                        console.warn("unexpected mode: "+value);
-                                    }
-                                    break;
-                                case "Color":
-                                    if (LGraphCanvas.node_colors[value]){
-                                        node.color = LGraphCanvas.node_colors[value].color;
-                                        node.bgcolor = LGraphCanvas.node_colors[value].bgcolor;
-                                    }else{
-                                        console.warn("unexpected color: "+value);
-                                    }
-                                    break;
-                                default:
-                                    node.setProperty(name,value);
-                                    break;
-                            }
-                            graphcanvas.graph.afterChange();
-                            graphcanvas.dirty_canvas = true;
-                        };
+                graphcanvas.graph.beforeChange(node);
+                switch(name){
+                    case "Title":
+                        node.title = value;
+                        break;
+                    case "Mode":
+                        var kV = Object.values(LiteGraph.NODE_MODES).indexOf(value);
+                        if (kV>=0 && LiteGraph.NODE_MODES[kV]){
+                            node.changeMode(kV);
+                        }else{
+                            console.warn("unexpected mode: "+value);
+                        }
+                        break;
+                    case "Color":
+                        if (LGraphCanvas.node_colors[value]){
+                            node.color = LGraphCanvas.node_colors[value].color;
+                            node.bgcolor = LGraphCanvas.node_colors[value].bgcolor;
+                        }else{
+                            console.warn("unexpected color: "+value);
+                        }
+                        break;
+                    default:
+                        node.setProperty(name,value);
+                        break;
+                }
+                graphcanvas.graph.afterChange();
+                graphcanvas.dirty_canvas = true;
+            };
             
             panel.addWidget( "string", "Title", node.title, {}, fUpdate);
             
@@ -13046,11 +13051,11 @@ LGraphNode.prototype.executeAction = function(action)
         } else {
             options = [
                 {
-                    content: "Add Node",
+                    content: i18next.t("ui.canvas_menu_add_node"),
                     has_submenu: true,
                     callback: LGraphCanvas.onMenuAdd
                 },
-                { content: "Add Group", callback: LGraphCanvas.onGroupAdd },
+                { content: i18next.t("ui.canvas_menu_add_group"), callback: LGraphCanvas.onGroupAdd },
 				//{ content: "Arrange", callback: that.graph.arrange },
                 //{content:"Collapse All", callback: LGraphCanvas.onMenuCollapseAll }
             ];

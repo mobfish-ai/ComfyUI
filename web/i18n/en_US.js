@@ -7,5 +7,10 @@ export default {
         "ui.clipspace_btn": "Clipspace",
         "ui.clear_btn": "Clear",
         "ui.load_default_btn": "Load Default",
+
+        "ui.canvas_menu_add_node": "Add Node",
+        "ui.canvas_menu_add_group": "Add Group",
+
+        "ui.node_panel.header.properties": "Properties",
     }
 }
